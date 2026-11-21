@@ -23,28 +23,22 @@
             </form>
             
             <!-- ПРОВЕРКА: если мы на странице логина, регистрации или создания вопроса -->
-            {% if request.path == '/login/' or request.path == '/signup/' or request.path == '/ask/' %}
-                
-                <!-- Неавторизованный вид -->
-                <div class="d-flex align-items-center gap-3">
-                    <a href="{% url 'login' %}" class="link-white fw-bold">log in</a>
-                    <a href="{% url 'signup' %}" class="link-white fw-bold">register</a>
-                </div>
-
-            {% else %}
-                
-                <!-- Авторизованный вид (профиль) -->
+            {% if user.is_authenticated %}
                 <div class="d-flex align-items-center gap-3">
                     <img src="{% static 'img/avatar.png' %}" alt="Avatar" class="rounded-circle border border-secondary" width="40" height="40">
                     <div class="d-flex flex-column user-info">
-                        <a class="fw-bold text-white text-decoration-none" href="{% url 'profile' %}">Dr. Pepper</a>
+                        <a class="fw-bold text-white text-decoration-none" href="#">Dr. Pepper</a>
                         <div class="d-flex gap-2 small">
-                            <a href="{% url 'profile' %}" class="link-white">settings</a>
-                            <a href="{% url 'login' %}" class="text-decoration-none text-danger">log out</a>
+                            <a href="#" class="link-white">settings</a>
+                            <a href="#" class="text-decoration-none text-danger">log out</a>
                         </div>
                     </div>
                 </div>
-
+            {% else %}
+                <div class="d-flex gap-3">
+                    <a href="#" class="link-white fw-bold">log in</a>
+                    <a href="#" class="link-white fw-bold">register</a>
+                </div>
             {% endif %}
             
         </div>
