@@ -4,12 +4,13 @@
     </div>
     <div class="card-body">
         <div class="d-flex flex-wrap gap-2">
-            <a href="{% url 'tag' tag_name='python' %}" class="badge tag-badge p-2 text-decoration-none">python</a>
-            <a href="{% url 'tag' tag_name='django' %}" class="badge tag-badge p-2 text-decoration-none">django</a>
-            <a href="{% url 'tag' tag_name='javascript' %}" class="badge tag-badge p-2 text-decoration-none">javascript</a>
-            <a href="{% url 'tag' tag_name='css' %}" class="badge tag-badge p-2 text-decoration-none">css</a>
-            <a href="{% url 'tag' tag_name='bootstrap' %}" class="badge tag-badge p-2 text-decoration-none">bootstrap</a>
-            <a href="{% url 'tag' tag_name='html' %}" class="badge tag-badge p-2 text-decoration-none">html</a>
+            <!-- ДОБАВЛЕНО questions: -->
+            <a href="{% url 'questions:tag' tag_name='python' %}" class="badge tag-badge p-2 text-decoration-none">python</a>
+            <a href="{% url 'questions:tag' tag_name='django' %}" class="badge tag-badge p-2 text-decoration-none">django</a>
+            <a href="{% url 'questions:tag' tag_name='javascript' %}" class="badge tag-badge p-2 text-decoration-none">javascript</a>
+            <a href="{% url 'questions:tag' tag_name='css' %}" class="badge tag-badge p-2 text-decoration-none">css</a>
+            <a href="{% url 'questions:tag' tag_name='bootstrap' %}" class="badge tag-badge p-2 text-decoration-none">bootstrap</a>
+            <a href="{% url 'questions:tag' tag_name='html' %}" class="badge tag-badge p-2 text-decoration-none">html</a>
         </div>
     </div>
 </div>
@@ -20,11 +21,11 @@
     </div>
     <div class="card-body">
         <ul class="list-unstyled mb-0">
-            <li class="mb-3"><a href="#" class="link-white fw-bold">👤 Dr. Pepper</a></li>
-            <li class="mb-3"><a href="#" class="link-white fw-bold">👤 Mr. Brown</a></li>
-            <li class="mb-3"><a href="#" class="link-white fw-bold">👤 Mrs. Robinson</a></li>
-            <li class="mb-3"><a href="#" class="link-white fw-bold">👤 Uncle Ben</a></li>
-            <li class="mb-0"><a href="#" class="link-white fw-bold">👤 Aunt May</a></li>
+            <li class="mb-2">👤 Dr. Pepper</li>
+            <li class="mb-2">👤 Mr. Brown</li>
+            <li class="mb-2">👤 Mrs. Robinson</li>
+            <li class="mb-2">👤 Uncle Ben</li>
+            <li>👤 Aunt May</li>
         </ul>
     </div>
 </div>

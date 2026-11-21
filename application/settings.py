@@ -87,3 +87,6 @@ MEDIA_ROOT = BASE_DIR / 'media'
 
 INTERNAL_IPS = ['127.0.0.1']
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+# Указываем Django использовать наш кастомный URL для входа
+LOGIN_URL = 'core:login'
+LOGIN_URL = '/login/'

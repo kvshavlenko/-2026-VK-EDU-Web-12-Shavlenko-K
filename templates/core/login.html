@@ -1,0 +1,30 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-6">
+        <div class="card bg-dark-gray shadow-sm">
+            <div class="card-body p-4">
+                <h2 class="text-white mb-4">Вход</h2>
+                {% if messages %}
+                    {% for message in messages %}
+                        <div class="alert alert-danger">{{ message }}</div>
+                    {% endfor %}
+                {% endif %}
+                <form method="post" action="{% url 'core:login' %}">
+                    {% csrf_token %}
+                    <input type="hidden" name="next" value="{{ next }}">
+                    <div class="mb-3">
+                        <label class="text-light-gray">Логин</label>
+                        <input type="text" name="username" class="form-control bg-dark text-white" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="text-light-gray">Пароль</label>
+                        <input type="password" name="password" class="form-control bg-dark text-white" required>
+                    </div>
+                    <button type="submit" class="btn btn-green w-100 fw-bold">Войти</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -2,100 +2,219 @@
 {% load static %}
 
 {% block content %}
-    <!-- Карточка вопроса -->
-    <div class="card mb-4 bg-dark-gray shadow-sm">
+<!-- Карточка вопроса -->
+<div class="card mb-4 bg-dark-gray shadow-sm">
+    <div class="card-body p-4">
+        <div class="d-flex gap-3">
+            <div class="flex-shrink-0">
+                <img src="{% static 'img/avatar.png' %}" alt="Avatar" class="q-avatar">
+            </div>
+            <div class="flex-grow-1">
+                <h1 class="fs-4 fw-bold mb-2 text-white">{{ question.title }}</h1>
+                <p class="card-text text-light-gray mb-3">{{ question.text }}</p>
+                <p class="text-light-gray small mb-3">
+                    asked by {{ question.author.username }} {{ question.created_at|timesince }} ago
+                </p>
+
+                <div class="d-flex flex-wrap gap-3 align-items-center">
+                    <div class="d-flex gap-1">
+                        {% for tag in question.tags.all %}
+                            <a href="{% url 'questions:tag' tag_name=tag.name %}" class="badge tag-badge text-decoration-none">{{ tag.name }}</a>
+                        {% endfor %}
+                    </div>
+
+                    <!-- Лайки вопроса -->
+                    <div class="ms-auto d-flex align-items-center gap-2 text-light-gray small">
+                        {% if user.is_authenticated %}
+                            <button type="button" class="btn btn-sm btn-outline-success py-0 px-2 like-btn" data-url="{% url 'questions:ajax_like_question' pk=question.pk %}" title="Поставить лайк">▲</button>
+                            <span class="fw-bold rating-value">{{ question.likes|default:0 }}</span>
+                            <button type="button" class="btn btn-sm btn-outline-danger py-0 px-2 like-btn" data-url="{% url 'questions:ajax_like_question' pk=question.pk %}" title="Поставить дизлайк">▼</button>
+                        {% else %}
+                            <button type="button" class="btn btn-sm btn-outline-success py-0 px-2" disabled title="Войдите, чтобы поставить лайк">▲</button>
+                            <span class="fw-bold rating-value">{{ question.likes|default:0 }}</span>
+                            <button type="button" class="btn btn-sm btn-outline-danger py-0 px-2" disabled title="Войдите, чтобы поставить дизлайк">▼</button>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Заголовок ответов -->
+<h2 class="fs-5 fw-bold text-white mb-3">Answers</h2>
+
+{% if empty %}
+    <div class="card bg-dark-gray shadow-sm">
+        <div class="card-body p-4 text-center">
+            <p class="text-light-gray mb-0">Пока нет ни одного ответа к этому вопросу</p>
+        </div>
+    </div>
+{% else %}
+    {% for answer in page_obj %}
+    <div class="card mb-3 bg-dark-gray shadow-sm" id="answer-{{ answer.pk }}">
         <div class="card-body p-4">
             <div class="d-flex gap-3">
                 <div class="flex-shrink-0">
                     <img src="{% static 'img/avatar.png' %}" alt="Avatar" class="q-avatar">
                 </div>
                 <div class="flex-grow-1">
-                    <h1 class="fs-4 fw-bold mb-2 text-white">{{ question.title }}</h1>
-                    <p class="card-text text-light-gray mb-3">
-                        {{ question.text }}
-                    </p>
+                    <p class="card-text text-light-gray mb-2">{{ answer.text }}</p>
                     <p class="text-light-gray small mb-3">
-                        asked by {{ question.author.username }} {{ question.created_at|timesince }} ago
+                        answered by {{ answer.author.username }} {{ answer.created_at|timesince }} ago
+                        {% if answer.is_correct %}
+                            <span class="badge bg-success ms-2 correct-badge">✓ Correct</span>
+                        {% endif %}
                     </p>
-                    
-                    <div class="d-flex flex-wrap gap-3 align-items-center">
-                        <div class="d-flex gap-1">
-                            {% for tag in question.tags.all %}
-                                <a href="{% url 'tag' tag_name=tag.name %}" class="badge tag-badge text-decoration-none">{{ tag.name }}</a>
-                            {% endfor %}
-                        </div>
-                        
-                        <div class="ms-auto d-flex align-items-center gap-2 text-light-gray small">
-                            <button class="btn btn-sm btn-outline-success py-0 px-2">▲</button>
-                            <span class="fw-bold">{{ question.likes|default:0 }}</span>
-                            <button class="btn btn-sm btn-outline-danger py-0 px-2">▼</button>
-                        </div>
+
+                    <div class="d-flex align-items-center gap-2 text-light-gray small">
+                        {% if user.is_authenticated %}
+                            <button type="button" class="btn btn-sm btn-outline-success py-0 px-2 like-btn" data-url="{% url 'questions:ajax_like_answer' pk=answer.pk %}" title="Поставить лайк">▲</button>
+                            <span class="fw-bold rating-value">{{ answer.likes|default:0 }}</span>
+                            <button type="button" class="btn btn-sm btn-outline-danger py-0 px-2 like-btn" data-url="{% url 'questions:ajax_like_answer' pk=answer.pk %}" title="Поставить дизлайк">▼</button>
+
+                            {% if question.author == user %}
+                                <button type="button" class="btn btn-sm btn-outline-primary ms-3 py-0 px-2 mark-correct-btn" data-question-id="{{ question.pk }}" data-answer-id="{{ answer.pk }}" title="Отметить как правильный">✓</button>
+                            {% endif %}
+                        {% else %}
+                            <button type="button" class="btn btn-sm btn-outline-success py-0 px-2" disabled title="Войдите, чтобы поставить лайк">▲</button>
+                            <span class="fw-bold rating-value">{{ answer.likes|default:0 }}</span>
+                            <button type="button" class="btn btn-sm btn-outline-danger py-0 px-2" disabled title="Войдите, чтобы поставить дизлайк">▼</button>
+                        {% endif %}
                     </div>
                 </div>
             </div>
         </div>
     </div>
+    {% endfor %}
 
-    <!-- Заголовок ответов -->
-    <h2 class="fs-5 fw-bold text-white mb-3">
-        {{ question.answers_count }} Answer{{ question.answers_count|pluralize }}
-    </h2>
+    <nav aria-label="Page navigation" class="mt-4 mb-5">
+        <ul class="pagination justify-content-center">
+            {% if page_obj.has_previous %}
+                <li class="page-item"><a class="page-link" href="?page={{ page_obj.previous_page_number }}">&laquo;</a></li>
+            {% endif %}
+            {% for num in page_obj.paginator.page_range %}
+                {% if page_obj.number == num %}
+                    <li class="page-item active"><span class="page-link">{{ num }}</span></li>
+                {% else %}
+                    <li class="page-item"><a class="page-link" href="?page={{ num }}">{{ num }}</a></li>
+                {% endif %}
+            {% endfor %}
+            {% if page_obj.has_next %}
+                <li class="page-item"><a class="page-link" href="?page={{ page_obj.next_page_number }}">&raquo;</a></li>
+            {% endif %}
+        </ul>
+    </nav>
+{% endif %}
 
-    {% if empty %}
-        <div class="card bg-dark-gray shadow-sm">
-            <div class="card-body p-4 text-center">
-                <p class="text-light-gray mb-0">Пока нет ни одного ответа к этому вопросу</p>
-            </div>
-        </div>
-    {% else %}
-        {% for answer in page_obj %}
-        <div class="card mb-3 bg-dark-gray shadow-sm">
-            <div class="card-body p-4">
-                <div class="d-flex gap-3">
-                    <div class="flex-shrink-0">
-                        <img src="{% static 'img/avatar.png' %}" alt="Avatar" class="q-avatar">
-                    </div>
-                    <div class="flex-grow-1">
-                        <p class="card-text text-light-gray mb-2">
-                            {{ answer.text }}
-                        </p>
-                        <p class="text-light-gray small mb-3">
-                            answered by {{ answer.author.username }} {{ answer.created_at|timesince }} ago
-                            {% if answer.is_correct %}
-                                <span class="badge bg-success ms-2">✓ Correct</span>
-                            {% endif %}
-                        </p>
-                        
-                        <div class="d-flex align-items-center gap-2 text-light-gray small">
-                            <button class="btn btn-sm btn-outline-success py-0 px-2">▲</button>
-                            <span class="fw-bold">{{ answer.likes|default:0 }}</span>
-                            <button class="btn btn-sm btn-outline-danger py-0 px-2">▼</button>
-                        </div>
-                    </div>
+<!-- Форма добавления ответа -->
+<div class="card bg-dark-gray shadow-sm mt-4">
+    <div class="card-body p-4">
+        <h3 class="fs-5 fw-bold text-white mb-3">Ваш ответ</h3>
+        {% if user.is_authenticated %}
+            <form method="post" action="{% url 'questions:add_answer' pk=question.pk %}">
+                {% csrf_token %}
+                <div class="mb-3">
+                    <textarea name="text" class="form-control bg-dark text-white" rows="4" placeholder="Напишите ваш ответ..." required></textarea>
                 </div>
+                <button type="submit" class="btn btn-green fw-bold">Опубликовать ответ</button>
+            </form>
+        {% else %}
+            <div class="alert alert-secondary">
+                Пожалуйста, <a href="{% url 'core:login' %}?next={{ request.path }}">войдите</a>, чтобы оставить ответ.
             </div>
-        </div>
-        {% endfor %}
+        {% endif %}
+    </div>
+</div>
 
-        <!-- Пагинация ответов -->
-        <nav aria-label="Page navigation" class="mt-4 mb-5">
-            <ul class="pagination justify-content-center">
-                {% if page_obj.has_previous %}
-                    <li class="page-item"><a class="page-link" href="?page={{ page_obj.previous_page_number }}">&laquo;</a></li>
-                {% endif %}
+<script>
+(function() {
+    function getCookie(name) {
+        let cookieValue = null;
+        if (document.cookie && document.cookie !== '') {
+            const cookies = document.cookie.split(';');
+            for (let i = 0; i < cookies.length; i++) {
+                const cookie = cookies[i].trim();
+                if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                    break;
+                }
+            }
+        }
+        return cookieValue;
+    }
+    const csrftoken = getCookie('csrftoken');
 
-                {% for num in page_obj.paginator.page_range %}
-                    {% if page_obj.number == num %}
-                        <li class="page-item active"><span class="page-link">{{ num }}</span></li>
-                    {% else %}
-                        <li class="page-item"><a class="page-link" href="?page={{ num }}">{{ num }}</a></li>
-                    {% endif %}
-                {% endfor %}
+    document.querySelectorAll('.like-btn').forEach(function(btn) {
+        btn.addEventListener('click', function(e) {
+            e.preventDefault();
+            const url = btn.getAttribute('data-url');
+            const container = btn.parentElement;
+            const ratingEl = container.querySelector('.rating-value');
 
-                {% if page_obj.has_next %}
-                    <li class="page-item"><a class="page-link" href="?page={{ page_obj.next_page_number }}">&raquo;</a></li>
-                {% endif %}
-            </ul>
-        </nav>
-    {% endif %}
+            fetch(url, {
+                method: 'POST',
+                headers: {
+                    'X-CSRFToken': csrftoken,
+                    'X-Requested-With': 'XMLHttpRequest'
+                }
+            })
+            .then(function(response) {
+                if (!response.ok) throw new Error('HTTP ' + response.status);
+                return response.json();
+            })
+            .then(function(data) {
+                if (data.error) {
+                    alert(data.error);
+                } else {
+                    ratingEl.textContent = data.rating;
+                }
+            })
+            .catch(function(err) {
+                console.error('Ошибка AJAX:', err);
+            });
+        });
+    });
+
+    document.querySelectorAll('.mark-correct-btn').forEach(function(btn) {
+        btn.addEventListener('click', function(e) {
+            e.preventDefault();
+            const questionId = btn.getAttribute('data-question-id');
+            const answerId = btn.getAttribute('data-answer-id');
+            const formData = new FormData();
+            formData.append('question_id', questionId);
+            formData.append('answer_id', answerId);
+
+            fetch("{% url 'questions:ajax_mark_correct' %}", {
+                method: 'POST',
+                headers: {
+                    'X-CSRFToken': csrftoken,
+                    'X-Requested-With': 'XMLHttpRequest'
+                },
+                body: formData
+            })
+            .then(function(response) {
+                if (!response.ok) throw new Error('HTTP ' + response.status);
+                return response.json();
+            })
+            .then(function(data) {
+                if (data.error) {
+                    alert(data.error);
+                } else if (data.success) {
+                    document.querySelectorAll('.correct-badge').forEach(function(el) { el.remove(); });
+                    const answerBlock = document.getElementById('answer-' + answerId);
+                    const meta = answerBlock.querySelector('.text-light-gray.small');
+                    const badge = document.createElement('span');
+                    badge.className = 'badge bg-success ms-2 correct-badge';
+                    badge.textContent = '✓ Correct';
+                    meta.appendChild(badge);
+                }
+            })
+            .catch(function(err) {
+                console.error('Ошибка AJAX:', err);
+            });
+        });
+    });
+})();
+</script>
 {% endblock %}
