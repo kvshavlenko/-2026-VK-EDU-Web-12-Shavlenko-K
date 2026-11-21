@@ -149,15 +149,20 @@
         btn.addEventListener('click', function(e) {
             e.preventDefault();
             const url = btn.getAttribute('data-url');
+            const type = btn.classList.contains('btn-outline-success') ? 'up' : 'down';
             const container = btn.parentElement;
             const ratingEl = container.querySelector('.rating-value');
+
+            const formData = new FormData();
+            formData.append('type', type);
 
             fetch(url, {
                 method: 'POST',
                 headers: {
                     'X-CSRFToken': csrftoken,
                     'X-Requested-With': 'XMLHttpRequest'
-                }
+                },
+                body: formData
             })
             .then(function(response) {
                 if (!response.ok) throw new Error('HTTP ' + response.status);
@@ -203,11 +208,13 @@
                 } else if (data.success) {
                     document.querySelectorAll('.correct-badge').forEach(function(el) { el.remove(); });
                     const answerBlock = document.getElementById('answer-' + answerId);
-                    const meta = answerBlock.querySelector('.text-light-gray.small');
-                    const badge = document.createElement('span');
-                    badge.className = 'badge bg-success ms-2 correct-badge';
-                    badge.textContent = '✓ Correct';
-                    meta.appendChild(badge);
+                    if (answerBlock) {
+                        const meta = answerBlock.querySelector('.text-light-gray.small');
+                        const badge = document.createElement('span');
+                        badge.className = 'badge bg-success ms-2 correct-badge';
+                        badge.textContent = '✓ Correct';
+                        meta.appendChild(badge);
+                    }
                 }
             })
             .catch(function(err) {

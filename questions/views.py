@@ -72,23 +72,33 @@ def add_answer(request, pk):
 # ==========================================
 # DZ4: AJAX запросы (Лайки и правильный ответ)
 # ==========================================
-
 @login_required
 def ajax_like_question(request, pk):
     if request.method != 'POST':
         return JsonResponse({'error': 'Метод не разрешен'}, status=405)
     
     question = get_object_or_404(Question, pk=pk)
-    like, created = QuestionLike.objects.get_or_create(user=request.user, question=question)
+    like_type = request.POST.get('type', 'up')
+    value = 1 if like_type == 'up' else -1
     
-    if not created:
-        like.delete()  # Убираем лайк при повторном нажатии
+    # Находим ВСЕ голоса этого пользователя за этот вопрос
+    user_likes = QuestionLike.objects.filter(user=request.user, question=question)
+    
+    if user_likes.exists():
+        first_like = user_likes.first()
+        if first_like.value == value:
+            # Если кликнули на ту же кнопку (например, снова ▲) — удаляем голос (и все дубликаты)
+            user_likes.delete()
+        else:
+            # Если кликнули на другую кнопку (был ▼, стал ▲) — обновляем значение (и чистим дубликаты)
+            user_likes.update(value=value)
     else:
-        like.value = 1
-        like.save()
+        # Голоса не было — создаем новый
+        QuestionLike.objects.create(user=request.user, question=question, value=value)
         
+    # Пересчитываем рейтинг
     new_rating = QuestionLike.objects.filter(question=question).aggregate(Sum('value'))['value__sum'] or 0
-    return JsonResponse({'rating': new_rating, 'user_liked': not created})
+    return JsonResponse({'rating': new_rating})
 
 
 @login_required
@@ -97,17 +107,27 @@ def ajax_like_answer(request, pk):
         return JsonResponse({'error': 'Метод не разрешен'}, status=405)
     
     answer = get_object_or_404(Answer, pk=pk)
-    like, created = AnswerLike.objects.get_or_create(user=request.user, answer=answer)
+    like_type = request.POST.get('type', 'up')
+    value = 1 if like_type == 'up' else -1
     
-    if not created:
-        like.delete()
+    # Находим ВСЕ голоса этого пользователя за этот ответ
+    user_likes = AnswerLike.objects.filter(user=request.user, answer=answer)
+    
+    if user_likes.exists():
+        first_like = user_likes.first()
+        if first_like.value == value:
+            # Удаляем голос и все возможные дубликаты
+            user_likes.delete()
+        else:
+            # Обновляем значение и чистим дубликаты
+            user_likes.update(value=value)
     else:
-        like.value = 1
-        like.save()
+        # Создаем новый голос
+        AnswerLike.objects.create(user=request.user, answer=answer, value=value)
         
+    # Пересчитываем рейтинг
     new_rating = AnswerLike.objects.filter(answer=answer).aggregate(Sum('value'))['value__sum'] or 0
-    return JsonResponse({'rating': new_rating, 'user_liked': not created})
-
+    return JsonResponse({'rating': new_rating})
 
 @login_required
 def ajax_mark_correct(request):

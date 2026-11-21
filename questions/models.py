@@ -103,7 +103,7 @@ class QuestionLike(models.Model):
     value = models.IntegerField(verbose_name='Значение')
 
     class Meta:
-        unique_together = ('user', 'question')
+        unique_together = ('user', 'question')  # <-- ЭТА СТРОКА ОБЯЗАТЕЛЬНА!
         verbose_name = 'Лайк вопроса'
         verbose_name_plural = 'Лайки вопросов'
 
@@ -114,6 +114,6 @@ class AnswerLike(models.Model):
     value = models.IntegerField(verbose_name='Значение')
 
     class Meta:
-        unique_together = ('user', 'answer')
+        unique_together = ('user', 'answer')  # <-- ЭТА СТРОКА ОБЯЗАТЕЛЬНА!
         verbose_name = 'Лайк ответа'
         verbose_name_plural = 'Лайки ответов'

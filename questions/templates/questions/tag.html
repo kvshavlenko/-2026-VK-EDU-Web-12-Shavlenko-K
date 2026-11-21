@@ -22,7 +22,6 @@
                     </div>
                     <div class="flex-grow-1">
                         <h2 class="card-title fs-5 mb-2">
-                            <!-- ИСПРАВЛЕНО: добавлен префикс questions: -->
                             <a href="{% url 'questions:question' pk=question.pk %}" class="text-decoration-none text-white link-white">{{ question.title }}</a>
                         </h2>
                         <p class="card-text text-light-gray mb-2">
@@ -31,17 +30,15 @@
                         <p class="text-light-gray small mb-3">asked {{ question.created_at|timesince }} ago</p>
                         
                         <div class="d-flex flex-wrap gap-3 align-items-center">
-                            <!-- ИСПРАВЛЕНО: добавлен префикс questions: -->
                             <a href="{% url 'questions:question' pk=question.pk %}" class="small link-answers">answers ({{ question.answers_count }})</a>
                             
                             <div class="d-flex gap-1">
                                 {% for tag in question.tags.all %}
-                                    <!-- ИСПРАВЛЕНО: добавлен префикс questions: -->
                                     <a href="{% url 'questions:tag' tag_name=tag.name %}" class="badge tag-badge text-decoration-none">{{ tag.name }}</a>
                                 {% endfor %}
                             </div>
                             
-                            <!-- ИСПРАВЛЕНО: добавлена логика AJAX и состояния для неавторизованных -->
+                            <!-- Логика AJAX и состояния для неавторизованных -->
                             <div class="ms-auto d-flex align-items-center gap-2 text-light-gray small">
                                 {% if user.is_authenticated %}
                                     <button type="button" class="btn btn-sm btn-outline-success py-0 px-2 like-btn" data-url="{% url 'questions:ajax_like_question' pk=question.pk %}" title="Поставить лайк">▲</button>
@@ -81,7 +78,7 @@
         </nav>
     {% endif %}
 
-    <!-- СКРИПТ ДЛЯ AJAX ЛАЙКОВ (ОБЯЗАТЕЛЬНО ОСТАВИТЬ В КОНЦЕ ФАЙЛА) -->
+    <!-- ОБНОВЛЕННЫЙ СКРИПТ ДЛЯ AJAX (отправляет type: 'up' или 'down') -->
     <script>
     (function() {
         function getCookie(name) {
@@ -104,15 +101,22 @@
             btn.addEventListener('click', function(e) {
                 e.preventDefault();
                 const url = btn.getAttribute('data-url');
+                
+                // Определяем тип действия: лайк (up) или дизлайк (down)
+                const type = btn.classList.contains('btn-outline-success') ? 'up' : 'down';
                 const container = btn.parentElement;
                 const ratingEl = container.querySelector('.rating-value');
+
+                const formData = new FormData();
+                formData.append('type', type);
 
                 fetch(url, {
                     method: 'POST',
                     headers: {
                         'X-CSRFToken': csrftoken,
                         'X-Requested-With': 'XMLHttpRequest'
-                    }
+                    },
+                    body: formData // <-- ВАЖНО: отправляем данные в теле запроса
                 })
                 .then(function(response) {
                     if (!response.ok) throw new Error('HTTP ' + response.status);

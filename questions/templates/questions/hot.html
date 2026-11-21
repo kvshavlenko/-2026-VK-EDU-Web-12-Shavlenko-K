@@ -85,53 +85,100 @@
 
     <!-- СКРИПТ ДЛЯ AJAX ЛАЙКОВ (ОБЯЗАТЕЛЬНО ОСТАВИТЬ В КОНЦЕ ФАЙЛА) -->
     <script>
-    (function() {
-        function getCookie(name) {
-            let cookieValue = null;
-            if (document.cookie && document.cookie !== '') {
-                const cookies = document.cookie.split(';');
-                for (let i = 0; i < cookies.length; i++) {
-                    const cookie = cookies[i].trim();
-                    if (cookie.substring(0, name.length + 1) === (name + '=')) {
-                        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
-                        break;
-                    }
+(function() {
+    function getCookie(name) {
+        let cookieValue = null;
+        if (document.cookie && document.cookie !== '') {
+            const cookies = document.cookie.split(';');
+            for (let i = 0; i < cookies.length; i++) {
+                const cookie = cookies[i].trim();
+                if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                    break;
                 }
             }
-            return cookieValue;
         }
-        const csrftoken = getCookie('csrftoken');
+        return cookieValue;
+    }
+    const csrftoken = getCookie('csrftoken');
 
-        document.querySelectorAll('.like-btn').forEach(function(btn) {
-            btn.addEventListener('click', function(e) {
-                e.preventDefault();
-                const url = btn.getAttribute('data-url');
-                const container = btn.parentElement;
-                const ratingEl = container.querySelector('.rating-value');
+    document.querySelectorAll('.like-btn').forEach(function(btn) {
+        btn.addEventListener('click', function(e) {
+            e.preventDefault();
+            const url = btn.getAttribute('data-url');
+            const type = btn.classList.contains('btn-outline-success') ? 'up' : 'down';
+            const container = btn.parentElement;
+            const ratingEl = container.querySelector('.rating-value');
 
-                fetch(url, {
-                    method: 'POST',
-                    headers: {
-                        'X-CSRFToken': csrftoken,
-                        'X-Requested-With': 'XMLHttpRequest'
-                    }
-                })
-                .then(function(response) {
-                    if (!response.ok) throw new Error('HTTP ' + response.status);
-                    return response.json();
-                })
-                .then(function(data) {
-                    if (data.error) {
-                        alert(data.error);
-                    } else {
-                        ratingEl.textContent = data.rating;
-                    }
-                })
-                .catch(function(err) {
-                    console.error('Ошибка AJAX:', err);
-                });
+            const formData = new FormData();
+            formData.append('type', type);
+
+            fetch(url, {
+                method: 'POST',
+                headers: {
+                    'X-CSRFToken': csrftoken,
+                    'X-Requested-With': 'XMLHttpRequest'
+                },
+                body: formData
+            })
+            .then(function(response) {
+                if (!response.ok) throw new Error('HTTP ' + response.status);
+                return response.json();
+            })
+            .then(function(data) {
+                if (data.error) {
+                    alert(data.error);
+                } else {
+                    ratingEl.textContent = data.rating;
+                }
+            })
+            .catch(function(err) {
+                console.error('Ошибка AJAX:', err);
             });
         });
-    })();
-    </script>
+    });
+
+    document.querySelectorAll('.mark-correct-btn').forEach(function(btn) {
+        btn.addEventListener('click', function(e) {
+            e.preventDefault();
+            const questionId = btn.getAttribute('data-question-id');
+            const answerId = btn.getAttribute('data-answer-id');
+            const formData = new FormData();
+            formData.append('question_id', questionId);
+            formData.append('answer_id', answerId);
+
+            fetch("{% url 'questions:ajax_mark_correct' %}", {
+                method: 'POST',
+                headers: {
+                    'X-CSRFToken': csrftoken,
+                    'X-Requested-With': 'XMLHttpRequest'
+                },
+                body: formData
+            })
+            .then(function(response) {
+                if (!response.ok) throw new Error('HTTP ' + response.status);
+                return response.json();
+            })
+            .then(function(data) {
+                if (data.error) {
+                    alert(data.error);
+                } else if (data.success) {
+                    document.querySelectorAll('.correct-badge').forEach(function(el) { el.remove(); });
+                    const answerBlock = document.getElementById('answer-' + answerId);
+                    if (answerBlock) {
+                        const meta = answerBlock.querySelector('.text-light-gray.small');
+                        const badge = document.createElement('span');
+                        badge.className = 'badge bg-success ms-2 correct-badge';
+                        badge.textContent = '✓ Correct';
+                        meta.appendChild(badge);
+                    }
+                }
+            })
+            .catch(function(err) {
+                console.error('Ошибка AJAX:', err);
+            });
+        });
+    });
+})();
+</script>
 {% endblock %}
